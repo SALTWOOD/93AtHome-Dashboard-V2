@@ -81,5 +81,6 @@ onMounted(async () => {
 
 <route lang="yaml">
   meta:
-    layout: appbar
+    layout: AppBar
 </route>
+  

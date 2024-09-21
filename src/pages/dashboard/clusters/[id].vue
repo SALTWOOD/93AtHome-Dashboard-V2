@@ -22,7 +22,6 @@
 
                     <v-divider></v-divider>
 
-
                     <v-divider></v-divider>
 
                     <v-text-field class="mt-5" label="创建日期" :model-value="formatCreatedAt(cluster.createdAt)"
@@ -53,7 +52,6 @@
                         <span v-if="modify">确认更改</span>
                         <span v-else>更改赞助信息</span>
                     </v-btn>
-
                 </v-tabs-window-item>
             </v-tabs-window>
         </v-card-text>
@@ -114,28 +112,41 @@
     </v-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+interface Cluster {
+    clusterId: string;
+    clusterName: string;
+    endpoint: string;
+    port: number;
+    bandwidth: number;
+    sponsor: string;
+    sponsorUrl: string;
+    createdAt: number;
+    downTime: number;
+    downReason: string;
+}
+
 const router = useRouter();
 const route = useRoute();
 
-const activeTab = ref(0)
-const cluster = ref({})
-const modify = ref(false)
-const snackbar = ref(false)
-const modifytext = ref('')
-const showInput = ref(false)
-const showResetDialog = ref(false)
-const showNewSecret = ref(false)
-const clusterId = ref('')
-const confirmName = ref('')
-const newSecret = ref('')
+const activeTab = ref<number>(0);
+const cluster = ref<Cluster | null>(null);
+const modify = ref<boolean>(false);
+const snackbar = ref<boolean>(false);
+const modifytext = ref<string>('');
+const showInput = ref<boolean>(false);
+const showResetDialog = ref<boolean>(false);
+const showNewSecret = ref<boolean>(false);
+const clusterId = ref<string>('');
+const confirmName = ref<string>('');
+const newSecret = ref<string>('');
 
-const formatCreatedAt = (createdAt) => {
+const formatCreatedAt = (createdAt: number): string => {
     const date = new Date(createdAt * 1000);
     const chinaTime = new Date(date.getTime());
 
@@ -147,35 +158,35 @@ const formatCreatedAt = (createdAt) => {
     const seconds = String(chinaTime.getSeconds()).padStart(2, '0');
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-}
+};
 
-const getclusters = async () => {
+const getclusters = async (): Promise<void> => {
     try {
         const response = await axios.get('/93AtHome/dashboard/user/clusters', {
             params: {
                 clusterId: route.params.id,
-            }
+            },
         });
         cluster.value = response.data;
     } catch (error) {
         console.error('Failed to fetch data:', error);
     }
-}
+};
 
-const modifyinf = async () => {
+const modifyinf = async (): Promise<void> => {
     modify.value = !modify.value;
 
     if (!modify.value) {
         try {
-            const modifyres = await axios.post('/93AtHome/dashboard/user/cluster/profile', {
-                clusterName: cluster.value.clusterName,
-                bandwidth: cluster.value.bandwidth,
-                sponsor: cluster.value.sponsor,
-                sponsorUrl: cluster.value.sponsorUrl,
+            await axios.post('/93AtHome/dashboard/user/cluster/profile', {
+                clusterName: cluster.value?.clusterName,
+                bandwidth: cluster.value?.bandwidth,
+                sponsor: cluster.value?.sponsor,
+                sponsorUrl: cluster.value?.sponsorUrl,
             }, {
                 params: {
-                    clusterId: cluster.value.clusterId
-                }
+                    clusterId: cluster.value?.clusterId,
+                },
             });
             modifytext.value = "成功修改信息";
             snackbar.value = true;
@@ -187,11 +198,11 @@ const modifyinf = async () => {
     }
 };
 
-const unbind = async () => {
-    if (cluster.value.clusterId === clusterId.value) {
+const unbind = async (): Promise<void> => {
+    if (cluster.value?.clusterId === clusterId.value) {
         try {
-            const unbind = await axios.post('/93AtHome/dashboard/user/unbindCluster', {
-                clusterId: cluster.value.clusterId,
+            await axios.post('/93AtHome/dashboard/user/unbindCluster', {
+                clusterId: cluster.value?.clusterId,
             });
             modifytext.value = "成功解绑";
             snackbar.value = true;
@@ -209,15 +220,15 @@ const unbind = async () => {
         modifytext.value = `clusterId 不一致`;
         snackbar.value = true;
     }
-}
+};
 
-const resetSecret = async () => {
-    if (confirmName.value === cluster.value.clusterName) {
+const resetSecret = async (): Promise<void> => {
+    if (confirmName.value === cluster.value?.clusterName) {
         try {
             const response = await axios.post('/93AtHome/dashboard/user/cluster/reset_secret', null, {
                 params: {
-                    clusterId: cluster.value.clusterId
-                }
+                    clusterId: cluster.value?.clusterId,
+                },
             });
             modifytext.value = "成功重置密钥";
             showResetDialog.value = false;
@@ -233,18 +244,19 @@ const resetSecret = async () => {
         modifytext.value = `节点名称不匹配`;
         snackbar.value = true;
     }
-}
+};
 
 onMounted(async () => {
     if (Cookies.get('token')) {
-        getclusters();
+        await getclusters();
     } else {
         router.push({ path: '/dashboard/auth/login' });
     }
-})
+});
 </script>
 
 <route lang="yaml">
     meta:
-      layout: appbar
-  </route>
+      layout: AppBar
+</route>
+    

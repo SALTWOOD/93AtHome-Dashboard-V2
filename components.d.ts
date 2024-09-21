@@ -9,7 +9,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     ChartCard: typeof import('./src/components/ChartCard.vue')['default']
     ClusterCard: typeof import('./src/components/ClusterCard.vue')['default']
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

@@ -190,5 +190,5 @@ onMounted(fetchSources);
 
 <route lang="yaml">
 meta:
-  layout: appbar
+  layout: AppBar
 </route>
